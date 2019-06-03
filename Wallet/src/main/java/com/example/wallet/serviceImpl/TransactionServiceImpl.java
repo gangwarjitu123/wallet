@@ -141,7 +141,7 @@ public class TransactionServiceImpl implements TransactionService {
 		List<HashMap<String,String>> response= new ArrayList<>();
 		for (Transaction transaction : list) {
 			  HashMap<String,String> map= new HashMap<>();
-			  map.put("phone",transaction.getUserAccount().getUserName());
+			  map.put("phone",transaction.getUserAccount().getPhone().toString());
 			  map.put("amountTransfer",String.valueOf(transaction.getAmount()));
 			  map.put("date",transaction.getTransactionDate().toString());
 			  map.put("transactionReference",transaction.getTransactionReference());
