@@ -80,7 +80,6 @@ public class UserAccountServiceImpl implements UserAccountService {
 	}
 
 	@Override
-	@Transactional
 	public User getUserById(Long id) {
 		// TODO Auto-generated method stub
 		return userAccountRepository.findById(id).get();

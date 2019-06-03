@@ -1,5 +1,6 @@
 package com.example.wallet.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,15 +55,16 @@ public class TransactionController {
 	@PostMapping("/{toUser}/from/{fromUser}")
 	public ResponseEntity transferMoney(@PathVariable("toUser") Long toUserAccountId,
 			@PathVariable("fromUser") Long fromUserAccountId, @RequestBody TransactionDTO walletDTO) {
-		List<Transaction> both;
+		HashMap<String,String> transaction;
 
 		try {
-			both = transactionService.transfer(walletDTO, toUserAccountId, fromUserAccountId);
+			transaction = transactionService.transfer(walletDTO, toUserAccountId, fromUserAccountId);
 		} catch (UserNotFoundException e) {
 			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch (BalanceLowException e) {
 			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
-		return new ResponseEntity<List<TransactionDTO>>(TransactionMapper.doToDTOList(both), HttpStatus.OK);
+		return new ResponseEntity<>(transaction, HttpStatus.OK);
 	}
+
 }
