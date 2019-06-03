@@ -79,4 +79,5 @@ public interface TransactionService {
 	 * @return list of parties involved if successful
 	 */
 	HashMap<String,String> transfer(TransactionDTO walletDTO, Long toUserAccountId, Long fromUserAccountId) throws UserNotFoundException,BalanceLowException;
+	List<HashMap<String,String>> history(Long id) throws UserNotFoundException,BalanceLowException;
 }

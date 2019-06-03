@@ -135,4 +135,19 @@ public class TransactionServiceImpl implements TransactionService {
 		return  null;
 	}
 
+	@Override
+	public List<HashMap<String, String>> history(Long id) throws UserNotFoundException, BalanceLowException {
+		List<Transaction> list=transactionRepository.getTransactionsForUser(id);
+		List<HashMap<String,String>> response= new ArrayList<>();
+		for (Transaction transaction : list) {
+			  HashMap<String,String> map= new HashMap<>();
+			  map.put("phone",transaction.getUserAccount().getUserName());
+			  map.put("amountTransfer",String.valueOf(transaction.getAmount()));
+			  map.put("date",transaction.getTransactionDate().toString());
+			  map.put("transactionReference",transaction.getTransactionReference());
+			  response.add(map);
+		}
+		return response;
+	}
+
 }
