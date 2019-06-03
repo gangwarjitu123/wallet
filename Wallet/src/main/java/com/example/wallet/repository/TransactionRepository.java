@@ -39,6 +39,6 @@ public interface TransactionRepository extends CrudRepository<Transaction, Long>
 	 * @param accountId
 	 * @return list of transactions
 	 */
-	@Query(nativeQuery = true, value = "select * from transaction where user_account_id = ?")
+	@Query(nativeQuery = true, value = "select * from transaction where user_id = ?")
 	List<Transaction> getTransactionsForUser(Long accountId);
 }

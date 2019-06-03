@@ -8,11 +8,7 @@ import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.wallet.dto.TransactionDTO;
 import com.example.wallet.dto.mapper.TransactionMapper;
@@ -65,6 +61,21 @@ public class TransactionController {
 			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(transaction, HttpStatus.OK);
+	}
+
+	@ApiOperation(value = "Pay from wallet ", response = List.class, tags = "transact")
+	@GetMapping("/history/{userId}")
+	public ResponseEntity history(@PathVariable("userId") Long toUserAccountId) {
+		List<HashMap<String,String>> transactions;
+
+		try {
+			transactions = transactionService.history(toUserAccountId);
+		} catch (UserNotFoundException e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch (BalanceLowException e) {
+			return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>(transactions, HttpStatus.OK);
 	}
 
 }
