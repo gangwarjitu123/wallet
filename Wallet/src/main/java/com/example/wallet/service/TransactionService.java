@@ -1,6 +1,7 @@
 package com.example.wallet.service;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 
 import com.example.wallet.dto.TransactionDTO;
@@ -77,5 +78,5 @@ public interface TransactionService {
 	 * @param fromUserAccountId
 	 * @return list of parties involved if successful
 	 */
-	List<Transaction> transfer(TransactionDTO walletDTO, Long toUserAccountId, Long fromUserAccountId) throws UserNotFoundException,BalanceLowException;
+	HashMap<String,String> transfer(TransactionDTO walletDTO, Long toUserAccountId, Long fromUserAccountId) throws UserNotFoundException,BalanceLowException;
 }

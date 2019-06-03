@@ -5,14 +5,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,7 +16,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class User {
 
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY,generator="native")
 	private Long id;
 	@NotNull
 	private String userName;
@@ -36,7 +29,7 @@ public class User {
 	private LocalDateTime updatedAt;
 	@OneToMany(mappedBy = "userAccount", fetch = FetchType.EAGER)
 	private Set<Transaction> transactions = new HashSet<>();
-	@OneToOne(fetch=FetchType.EAGER)
+	@OneToOne(fetch=FetchType.EAGER,cascade = CascadeType.ALL)
 	@JoinColumn(name="account_id")
 	private Account account;
 
@@ -129,30 +122,6 @@ public class User {
 		this.account = account;
 	}
 
-	@Override
-	public int hashCode() {
-		int hash = 7;
-		hash = 79 * hash + Objects.hashCode(this.id);
-		return hash;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		final User other = (User) obj;
-		if (!Objects.equals(this.id, other.id)) {
-			return false;
-		}
-		return true;
-	}
 
 	public static class UserAccountBuilder {
 

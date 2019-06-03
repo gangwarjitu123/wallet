@@ -1,14 +1,14 @@
 package com.example.wallet.serviceImpl;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.wallet.dto.TransactionDTO;
@@ -25,7 +25,7 @@ import com.example.wallet.service.UserAccountService;
 import com.google.common.collect.Lists;
 
 @Service
-@Transactional
+@Slf4j
 public class TransactionServiceImpl implements TransactionService {
 
 	@Autowired
@@ -51,7 +51,7 @@ public class TransactionServiceImpl implements TransactionService {
 	 * also validates if a user has insufficient funds if a debit is to be made
 	 */
 	@Override
-	@Transactional(rollbackFor = RuntimeException.class)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public Transaction createTransaction(Transaction transaction) throws BalanceLowException {
 		User user=accountService.getUserById(transaction.getUserAccount().getId());
 		double balance = user.getAccount().getAmount();
@@ -59,12 +59,13 @@ public class TransactionServiceImpl implements TransactionService {
         user.getAccount().setAmount(balance);
         try {
 			accountService.save(user);
-			accountRepository.save(user.getAccount());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         if (balance>= 0) {
+			transaction.setAccount(user.getAccount());
+			transaction.setUserAccount(user);
 			return transactionRepository.save(transaction);
 		}
 
@@ -104,29 +105,34 @@ public class TransactionServiceImpl implements TransactionService {
 	}
 
 	@Transactional(rollbackFor = RuntimeException.class)
-	public List<Transaction> transfer(TransactionDTO walletDTO, Long toUserAccountId, Long fromUserAccountId)
-			throws UserNotFoundException, BalanceLowException {
-		List<Transaction> transactions = new ArrayList<>();
+	public HashMap<String,String> transfer(TransactionDTO walletDTO, Long toUserAccountId, Long fromUserAccountId) {
+		User to=accountService.getUserById(toUserAccountId);
+		User from=accountService.getUserById(fromUserAccountId);
+		double fromBalance=from.getAccount().getAmount()-walletDTO.getAmount();
+		from.getAccount().setAmount(fromBalance);
 
-		if (accountService.userAccountByPK(fromUserAccountId) == null)
-			throw new UserNotFoundException(String.format("userAccount with '%d' not found ", fromUserAccountId));
-		if (accountService.userAccountByPK(toUserAccountId) == null) {
-			throw new UserNotFoundException(String.format("userAccount with '%d' not found ", toUserAccountId));
+		double toBalance=to.getAccount().getAmount()+walletDTO.getAmount();
+		to.getAccount().setAmount(toBalance);
+		Transaction transaction = new Transaction();
+		transaction.setUserAccount(from);
+		transaction.setAccount(from.getAccount());
+		transaction.setAmount(walletDTO.getAmount());
+		transaction.setTransactionDate(new Date());
+		transaction.setTransactionType(1);
+		transaction.setTransactionReference(UUID.randomUUID().toString());
+		try {
+			accountService.save(from);
+			accountService.save(to);
+			 Transaction tarTransaction1=transactionRepository.save(transaction);
+			HashMap<String,String> map= new HashMap<>();
+			 map.put("referanceId",tarTransaction1.getTransactionReference());
+			 map.put("message","transaction process successfully");
+			return  map;
+		}catch (Exception e){
+			log.error("error in transaction");
 		}
-		Transaction sourceUserTransaction;
-		Transaction destinationUserTransaction;
 
-		walletDTO.setUserAccountId(fromUserAccountId);
-		walletDTO.setAmount(walletDTO.getAmount());
-		sourceUserTransaction = createTransaction(TransactionMapper.dtoToDO(walletDTO));
-		transactions.add(sourceUserTransaction);
-
-		walletDTO.setUserAccountId(toUserAccountId);
-		walletDTO.setAmount(walletDTO.getAmount());
-		destinationUserTransaction = createTransaction(TransactionMapper.dtoToDO(walletDTO));
-		transactions.add(destinationUserTransaction);
-
-		return transactions;
+		return  null;
 	}
 
 }
